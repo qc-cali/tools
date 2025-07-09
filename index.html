@@ -11,6 +11,9 @@
   max-width: 1200px;
   padding: 10px;
 }
+body {
+  transition: background-color 0.5s ease;
+}
 
      #calculatorGrid {
   display: grid;
@@ -58,6 +61,34 @@
     }
     #clearBtn:hover:enabled {
       background-color: #6b7280;
+    }
+
+    #startTimerBtn {
+        display: none; /* Hide the Start Timer button by default */
+        background-color: #4f46e5;
+        color: white;
+    }
+    #startTimerBtn:hover {
+  background-color: #3730a3;
+}
+    .flash {
+  animation: flash 60s ease-in-out;
+}
+@keyframes flash {
+  0%   { background-color: #fde047; }
+  100% { background-color: transparent; }
+}
+
+
+    #results {
+        margin-top: 20px;
+        list-style-type: none;
+    }
+
+    #timerDisplay {
+        margin-top: 20px;
+        font-size: 20px;
+        font-weight: bold;
     }
     button:disabled {
       opacity: 0.5;
@@ -130,15 +161,17 @@
   <div id="calculatorGrid">
         
     <div class="container">
-        <h2>Minute Adder</h2>
-        <p>Enter minutes (0–59):</p>
-        <input type="number" id="minutes" min="0" max="59" oninput="toggleClearButton()">
-        <div class="buttons">
+    <h2>Minute Adder and Timer</h2>
+    <p>Enter minutes (0–59):</p>
+    <input type="number" id="minutes" min="0" max="59" oninput="toggleClearButton()">
+    <div class="buttons">
         <button id="calculateBtn" onclick="calculate()">Calculate</button>
         <button id="clearBtn" onclick="clearResults()" disabled>Clear</button>
-        </div>
-        <ul id="results"></ul>
+        <button id="startTimerBtn" onclick="startTimer()" disabled>Start Timer</button>
     </div>
+    <ul id="results"></ul>
+    <p id="timerDisplay"></p> <!-- Timer display -->
+</div>
     <!-- Place this inside the <body> tag below your existing HTML -->
     <div class="container" style="margin-top: 30px;">
     <h2>Capacity Calculation</h2>
@@ -229,37 +262,103 @@
 </div>
 
   <script>
+    let timerInterval;
+    let totalSeconds;
+
      function calculate() {
-      const input = parseInt(document.getElementById("minutes").value);
-      const additions = [15, 30, 45, 60];
-      const labels = ["First reading", "Second reading", "Third reading", "Fourth reading"];
-      const resultList = document.getElementById("results");
-      resultList.innerHTML = "";
+  const input = parseInt(document.getElementById("minutes").value);
+  const additions = [15, 30, 45, 60];
+  const labels = ["First reading", "Second reading", "Third reading", "Fourth reading"];
+  const resultList = document.getElementById("results");
+  resultList.innerHTML = "";
 
-      if (isNaN(input) || input < 0 || input > 59) {
-        alert("Please enter a number between 0 and 59.");
-        return;
-      }
+  if (isNaN(input) || input < 0 || input > 59) {
+    alert("Please enter a number between 0 and 59.");
+    return;
+  }
 
-      additions.forEach((add, index) => {
-        let total = input + add;
-        if (total > 60) total -= 60;
-        const li = document.createElement("li");
-        li.textContent = `${labels[index]}:${total}`;
-        resultList.appendChild(li);
-      });
-    }
+  additions.forEach((add, index) => {
+    let total = input + add;
+    if (total >= 60) total -= 60;
+    const li = document.createElement("li");
+    li.textContent = `${labels[index]}: ${total}`;
+    resultList.appendChild(li);
+  });
+
+  // ✅ Show the Start Timer button
+  const timerBtn = document.getElementById("startTimerBtn");
+  timerBtn.style.display = "inline-block";
+  timerBtn.disabled = false;
+
+  // Enable clear button too
+  document.getElementById("clearBtn").disabled = false;
+}
+
 
     function clearResults() {
-      document.getElementById("minutes").value = "";
-      document.getElementById("results").innerHTML = "";
-      document.getElementById("clearBtn").disabled = true;
-    }
+  document.getElementById("minutes").value = "";
+  document.getElementById("results").innerHTML = "";
+  document.getElementById("timerDisplay").textContent = "";
+  document.getElementById("clearBtn").disabled = true;
+
+  // ✅ Hide Start Timer again
+  const timerBtn = document.getElementById("startTimerBtn");
+  timerBtn.style.display = "none";
+  timerBtn.disabled = true;
+
+  // ✅ Clear any running timer
+  clearInterval(timerInterval);
+}
 
     function toggleClearButton() {
       const inputVal = document.getElementById("minutes").value;
       document.getElementById("clearBtn").disabled = inputVal === "";
     }
+
+    function startTimer() {
+  clearInterval(timerInterval); // Stop any existing timer
+
+  totalSeconds = 60 * 60; // 1 hour
+  updateTimerDisplay(); // Immediate update
+
+  timerInterval = setInterval(function () {
+    totalSeconds--;
+
+    // Beep at 45, 30, 15, 0 minute marks
+    const minsLeft = totalSeconds / 60;
+    if (totalSeconds % 60 === 0) {
+      if (minsLeft === 59 || minsLeft === 30 || minsLeft === 15 || minsLeft === 0) {
+        let beepCount = 0;
+        const beepInterval = setInterval(() => {
+          document.getElementById("beep").play().catch(e => console.log("Muted autoplay", e));
+          beepCount++;
+  if (beepCount >= 10) clearInterval(beepInterval);
+}, 3000);
+        document.body.classList.add("flash");
+        setTimeout(()=> document.body.classList.remove("flash"), 60000)
+      }
+    }
+
+    updateTimerDisplay();
+
+    if (totalSeconds <= 0) {
+      clearInterval(timerInterval);
+      alert("Time's up!");
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+  document.getElementById("timerDisplay").textContent = "Timer stopped.";
+}
+
+
+  function updateTimerDisplay() {
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      document.getElementById("timerDisplay").textContent = `Time remaining: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  }
 
     function calculateCapacity() {
     const I = parseFloat(document.getElementById("current").value);
@@ -495,6 +594,7 @@ function toggleHeatClear() {
 <footer style="background:#f9fafb; color:#555; text-align:center; padding:15px 10px; font-size:14px; border-top:1px solid #ddd; margin-top:40px;">
   &copy; 2025 Battery Tools. Made by a qc guy with chatgpt.
 </footer>
+<audio id="beep" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
 
 </body>
 
