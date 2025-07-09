@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Battery Tools</title>
+  <style>
+    body {
+  font-family: Arial, sans-serif;
+  background: #f3f4f6;
+  margin: 50px auto;
+  max-width: 1200px;
+  padding: 10px;
+}
+
+     #calculatorGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+  padding: 10px;
+}
+    .container {
+  background: #f9fafb;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
+  min-width: 320px;
+}
+    
+    input[type="number"] {
+      padding: 10px;
+      width: 80%;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+    .buttons {
+      margin-top: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    #calculateBtn {
+      background-color: #4f46e5;
+    }
+    #calculateBtn:hover {
+      background-color: #3730a3;
+    }
+    #clearBtn {
+      background-color: #9ca3af;
+    }
+    #clearBtn:hover:enabled {
+      background-color: #6b7280;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+    }
+    li {
+      background: #e0e7ff;
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    #calculateCapBtn {
+      background-color: #4f46e5;
+    }
+    #calculateCapBtn:hover {
+      background-color: #3730a3;
+    }
+
+    #calculateCEBtn {
+  background-color: #4f46e5;
+    }
+    #calculateCEBtn:hover {
+    background-color: #3730a3;
+    }
+
+    #calculateEEBtn {
+    background-color: #4f46e5;
+    }
+    #calculateEEBtn:hover {
+    background-color: #3730a3;
+    }
+
+    #calculateSDBtn {
+    background-color: #4f46e5;
+    }
+    #calculateSDBtn:hover {
+    background-color: #3730a3;
+    }
+
+    #calculateIRBtn {
+    background-color: #4f46e5;
+    }
+    #calculateIRBtn:hover {
+    background-color: #3730a3;
+    }
+
+    #calculateHeatBtn {
+    background-color: #4f46e5;
+    }
+    #calculateHeatBtn:hover {
+    background-color: #3730a3;
+    }
+
+   
+
+
+  </style>
+</head>
+
+<body>
+    <header style="background:#4f46e5; color:white; padding: 15px 30px; text-align:center; font-size: 24px; font-weight: bold; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+  Battery Tools
+</header>
+
+  <div id="calculatorGrid">
+        
+    <div class="container">
+        <h2>Minute Adder</h2>
+        <p>Enter minutes (0–59):</p>
+        <input type="number" id="minutes" min="0" max="59" oninput="toggleClearButton()">
+        <div class="buttons">
+        <button id="calculateBtn" onclick="calculate()">Calculate</button>
+        <button id="clearBtn" onclick="clearResults()" disabled>Clear</button>
+        </div>
+        <ul id="results"></ul>
+    </div>
+    <!-- Place this inside the <body> tag below your existing HTML -->
+    <div class="container" style="margin-top: 30px;">
+    <h2>Capacity Calculation</h2>
+    <p>Enter current and time:</p>
+    <input type="number" id="current" placeholder="Current (A or mA)" step="any">
+    <br><br>
+    <input type="number" id="time" placeholder="Time (hours)" step="any">
+    <div class="buttons">
+        <button id="calculateCapBtn" onclick="calculateCapacity()">Calculate Capacity</button>
+        <button id="clearCapBtn" onclick="clearCapacity()" disabled>Clear</button>
+    </div>
+    <ul id="capacityResult"></ul>
+    </div>
+
+    <div class="container" style="margin-top: 30px;">
+    <h2>Coulombic Efficiency (CE)</h2>
+    <p>Enter charge and discharge capacities:</p>
+    <input type="number" id="chargeCap" placeholder="Charge Capacity (Ah or mAh)" step="any">
+    <br><br>
+    <input type="number" id="dischargeCap" placeholder="Discharge Capacity (Ah or mAh)" step="any">
+    <div class="buttons">
+        <button id="calculateCEBtn" onclick="calculateCE()">Calculate CE</button>
+        <button id="clearCEBtn" onclick="clearCE()" disabled>Clear</button>
+    </div>
+    <ul id="ceResult"></ul>
+    <p style="font-size: 0.9em; color: #555;">
+        Indicates reversibility (e.g., Li-ion should be &gt;99.5% after formation).
+    </p>
+    </div>
+
+    <div class="container" style="margin-top: 30px;">
+    <h2>Energy Efficiency</h2>
+    <p>Enter charge and discharge energy values:</p>
+    <input type="number" id="chargeEnergy" placeholder="Charge Energy (Wh)" step="any">
+    <br><br>
+    <input type="number" id="dischargeEnergy" placeholder="Discharge Energy (Wh)" step="any">
+    <div class="buttons">
+        <button id="calculateEEBtn" onclick="calculateEnergyEfficiency()">Calculate Efficiency</button>
+        <button id="clearEEBtn" onclick="clearEnergyEfficiency()" disabled>Clear</button>
+    </div>
+    <ul id="eeResult"></ul>
+    </div>
+
+    <div class="container" style="margin-top: 30px;">
+    <h2>Self-Discharge Rate</h2>
+    <p>Enter initial and final capacity:</p>
+    <input type="number" id="initialCap" placeholder="Initial Capacity (Ah or mAh)" step="any">
+    <br><br>
+    <input type="number" id="finalCap" placeholder="Final Capacity after rest (Ah or mAh)" step="any">
+    <div class="buttons">
+        <button id="calculateSDBtn" onclick="calculateSelfDischarge()">Calculate Self-Discharge</button>
+        <button id="clearSDBtn" onclick="clearSelfDischarge()" disabled>Clear</button>
+    </div>
+    <ul id="sdResult"></ul>
+    </div>
+
+    <div class="container" style="margin-top: 30px;">
+    <h2>DC Internal Resistance (IR)</h2>
+    <p>Enter voltage and current values:</p>
+    <input type="number" id="vocv" placeholder="Open-Circuit Voltage (V)" step="any">
+    <br><br>
+    <input type="number" id="vload" placeholder="Voltage Under Load (V)" step="any">
+    <br><br>
+    <input type="number" id="iload" placeholder="Load Current (A)" step="any">
+    <div class="buttons">
+        <button id="calculateIRBtn" onclick="calculateIR()">Calculate IR</button>
+        <button id="clearIRBtn" onclick="clearIR()" disabled>Clear</button>
+    </div>
+    <ul id="irResult"></ul>
+    </div>
+
+    <div class="container" style="margin-top: 30px;">
+    <h2>Thermal Runaway – Heat Generation</h2>
+    <p>Enter current and internal resistance:</p>
+    <input type="number" id="thermalCurrent" placeholder="Current (A)" step="any">
+    <br><br>
+    <input type="number" id="thermalResistance" placeholder="DC Internal Resistance (Ω)" step="any">
+    <div class="buttons">
+        <button id="calculateHeatBtn" onclick="calculateHeat()">Calculate Heat (W)</button>
+        <button id="clearHeatBtn" onclick="clearHeat()" disabled>Clear</button>
+    </div>
+    <ul id="heatResult"></ul>
+    <p style="font-size: 0.9em; color: #555;">
+        P<sub>heat</sub> = I² × R<sub>DC</sub> — critical for thermal runaway risk assessment.
+    </p>
+    </div>
+
+</div>
+
+  <script>
+     function calculate() {
+      const input = parseInt(document.getElementById("minutes").value);
+      const additions = [15, 30, 45, 60];
+      const labels = ["First reading", "Second reading", "Third reading", "Fourth reading"];
+      const resultList = document.getElementById("results");
+      resultList.innerHTML = "";
+
+      if (isNaN(input) || input < 0 || input > 59) {
+        alert("Please enter a number between 0 and 59.");
+        return;
+      }
+
+      additions.forEach((add, index) => {
+        let total = input + add;
+        if (total >= 60) total -= 60;
+        const li = document.createElement("li");
+        li.textContent = `${labels[index]}:${total}`;
+        resultList.appendChild(li);
+      });
+    }
+
+    function clearResults() {
+      document.getElementById("minutes").value = "";
+      document.getElementById("results").innerHTML = "";
+      document.getElementById("clearBtn").disabled = true;
+    }
+
+    function toggleClearButton() {
+      const inputVal = document.getElementById("minutes").value;
+      document.getElementById("clearBtn").disabled = inputVal === "";
+    }
+
+    function calculateCapacity() {
+    const I = parseFloat(document.getElementById("current").value);
+    const t = parseFloat(document.getElementById("time").value);
+    const result = document.getElementById("capacityResult");
+    const clearBtn = document.getElementById("clearCapBtn");
+
+    result.innerHTML = "";
+
+    if (isNaN(I) || isNaN(t)) {
+      alert("Please enter both current and time.");
+      return;
+    }
+
+    const capacity = I * t;
+    const li = document.createElement("li");
+    li.textContent = `Capacity = ${I} × ${t} = ${capacity} (Ah or mAh)`;
+    result.appendChild(li);
+
+    clearBtn.disabled = false;
+  }
+
+  function clearCapacity() {
+    document.getElementById("current").value = "";
+    document.getElementById("time").value = "";
+    document.getElementById("capacityResult").innerHTML = "";
+    document.getElementById("clearCapBtn").disabled = true;
+  }
+
+  // Enable/disable clear button based on input
+  document.getElementById("current").addEventListener("input", toggleCapClear);
+  document.getElementById("time").addEventListener("input", toggleCapClear);
+
+  function toggleCapClear() {
+    const current = document.getElementById("current").value;
+    const time = document.getElementById("time").value;
+    document.getElementById("clearCapBtn").disabled = !(current || time);
+  }
+
+  function calculateCE() {
+  const charge = parseFloat(document.getElementById("chargeCap").value);
+  const discharge = parseFloat(document.getElementById("dischargeCap").value);
+  const result = document.getElementById("ceResult");
+  const clearBtn = document.getElementById("clearCEBtn");
+
+  result.innerHTML = "";
+
+  if (isNaN(charge) || isNaN(discharge) || charge === 0) {
+    alert("Please enter valid charge and discharge capacities (charge must not be zero).");
+    return;
+  }
+
+  const ce = (discharge / charge) * 100;
+  const li = document.createElement("li");
+  li.textContent = `CE = (${discharge} / ${charge}) × 100 = ${ce.toFixed(2)} %`;
+  result.appendChild(li);
+
+  clearBtn.disabled = false;
+}
+
+function clearCE() {
+  document.getElementById("chargeCap").value = "";
+  document.getElementById("dischargeCap").value = "";
+  document.getElementById("ceResult").innerHTML = "";
+  document.getElementById("clearCEBtn").disabled = true;
+}
+
+document.getElementById("chargeCap").addEventListener("input", toggleCEClear);
+document.getElementById("dischargeCap").addEventListener("input", toggleCEClear);
+
+function toggleCEClear() {
+  const c = document.getElementById("chargeCap").value;
+  const d = document.getElementById("dischargeCap").value;
+  document.getElementById("clearCEBtn").disabled = !(c || d);
+}
+
+
+function calculateEnergyEfficiency() {
+  const chargeE = parseFloat(document.getElementById("chargeEnergy").value);
+  const dischargeE = parseFloat(document.getElementById("dischargeEnergy").value);
+  const result = document.getElementById("eeResult");
+  const clearBtn = document.getElementById("clearEEBtn");
+
+  result.innerHTML = "";
+
+  if (isNaN(chargeE) || isNaN(dischargeE) || chargeE === 0) {
+    alert("Please enter valid charge and discharge energy values (charge must not be zero).");
+    return;
+  }
+
+  const eff = (dischargeE / chargeE) * 100;
+  const li = document.createElement("li");
+  li.textContent = `Energy Efficiency = (${dischargeE} / ${chargeE}) × 100 = ${eff.toFixed(2)} %`;
+  result.appendChild(li);
+
+  clearBtn.disabled = false;
+}
+
+function clearEnergyEfficiency() {
+  document.getElementById("chargeEnergy").value = "";
+  document.getElementById("dischargeEnergy").value = "";
+  document.getElementById("eeResult").innerHTML = "";
+  document.getElementById("clearEEBtn").disabled = true;
+}
+
+document.getElementById("chargeEnergy").addEventListener("input", toggleEEClear);
+document.getElementById("dischargeEnergy").addEventListener("input", toggleEEClear);
+
+function toggleEEClear() {
+  const c = document.getElementById("chargeEnergy").value;
+  const d = document.getElementById("dischargeEnergy").value;
+  document.getElementById("clearEEBtn").disabled = !(c || d);
+}
+
+
+function calculateSelfDischarge() {
+  const initial = parseFloat(document.getElementById("initialCap").value);
+  const final = parseFloat(document.getElementById("finalCap").value);
+  const result = document.getElementById("sdResult");
+  const clearBtn = document.getElementById("clearSDBtn");
+
+  result.innerHTML = "";
+
+  if (isNaN(initial) || isNaN(final) || initial === 0) {
+    alert("Please enter valid initial and final capacities (initial must not be zero).");
+    return;
+  }
+
+  const rate = ((initial - final) / initial) * 100;
+  const li = document.createElement("li");
+  li.textContent = `Self-Discharge Rate = (${initial} − ${final}) / ${initial} × 100 = ${rate.toFixed(2)} %`;
+  result.appendChild(li);
+
+  clearBtn.disabled = false;
+}
+
+function clearSelfDischarge() {
+  document.getElementById("initialCap").value = "";
+  document.getElementById("finalCap").value = "";
+  document.getElementById("sdResult").innerHTML = "";
+  document.getElementById("clearSDBtn").disabled = true;
+}
+
+document.getElementById("initialCap").addEventListener("input", toggleSDClear);
+document.getElementById("finalCap").addEventListener("input", toggleSDClear);
+
+function toggleSDClear() {
+  const i = document.getElementById("initialCap").value;
+  const f = document.getElementById("finalCap").value;
+  document.getElementById("clearSDBtn").disabled = !(i || f);
+}
+
+
+function calculateIR() {
+  const vocv = parseFloat(document.getElementById("vocv").value);
+  const vload = parseFloat(document.getElementById("vload").value);
+  const iload = parseFloat(document.getElementById("iload").value);
+  const result = document.getElementById("irResult");
+  const clearBtn = document.getElementById("clearIRBtn");
+
+  result.innerHTML = "";
+
+  if (isNaN(vocv) || isNaN(vload) || isNaN(iload) || iload === 0) {
+    alert("Please enter valid values (Iload must not be zero).");
+    return;
+  }
+
+  const rdc = (vocv - vload) / iload;
+  const li = document.createElement("li");
+  li.textContent = `RDC = (${vocv} − ${vload}) / ${iload} = ${rdc.toFixed(4)} Ω`;
+  result.appendChild(li);
+
+  clearBtn.disabled = false;
+}
+
+function clearIR() {
+  document.getElementById("vocv").value = "";
+  document.getElementById("vload").value = "";
+  document.getElementById("iload").value = "";
+  document.getElementById("irResult").innerHTML = "";
+  document.getElementById("clearIRBtn").disabled = true;
+}
+
+document.getElementById("vocv").addEventListener("input", toggleIRClear);
+document.getElementById("vload").addEventListener("input", toggleIRClear);
+document.getElementById("iload").addEventListener("input", toggleIRClear);
+
+function toggleIRClear() {
+  const vocv = document.getElementById("vocv").value;
+  const vload = document.getElementById("vload").value;
+  const iload = document.getElementById("iload").value;
+  document.getElementById("clearIRBtn").disabled = !(vocv || vload || iload);
+}
+
+function calculateHeat() {
+  const I = parseFloat(document.getElementById("thermalCurrent").value);
+  const R = parseFloat(document.getElementById("thermalResistance").value);
+  const result = document.getElementById("heatResult");
+  const clearBtn = document.getElementById("clearHeatBtn");
+
+  result.innerHTML = "";
+
+  if (isNaN(I) || isNaN(R)) {
+    alert("Please enter both current and resistance.");
+    return;
+  }
+
+  const heat = I * I * R;
+  const li = document.createElement("li");
+  li.textContent = `Pheat = ${I}² × ${R} = ${heat.toFixed(3)} W`;
+  result.appendChild(li);
+
+  clearBtn.disabled = false;
+}
+
+function clearHeat() {
+  document.getElementById("thermalCurrent").value = "";
+  document.getElementById("thermalResistance").value = "";
+  document.getElementById("heatResult").innerHTML = "";
+  document.getElementById("clearHeatBtn").disabled = true;
+}
+
+document.getElementById("thermalCurrent").addEventListener("input", toggleHeatClear);
+document.getElementById("thermalResistance").addEventListener("input", toggleHeatClear);
+
+function toggleHeatClear() {
+  const i = document.getElementById("thermalCurrent").value;
+  const r = document.getElementById("thermalResistance").value;
+  document.getElementById("clearHeatBtn").disabled = !(i || r);
+}
+  </script>
+
+<footer style="background:#f9fafb; color:#555; text-align:center; padding:15px 10px; font-size:14px; border-top:1px solid #ddd; margin-top:40px;">
+  &copy; 2025 Battery Tools. Made by a qc guy with chatgpt.
+</footer>
+
+</body>
+
+</html>
