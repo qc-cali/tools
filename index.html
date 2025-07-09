@@ -327,7 +327,7 @@ body {
     // Beep at 45, 30, 15, 0 minute marks
     const minsLeft = totalSeconds / 60;
     if (totalSeconds % 60 === 0) {
-      if (minsLeft === 45 || minsLeft === 30 || minsLeft === 15 || minsLeft === 0) {
+      if (minsLeft === 59 || minsLeft === 30 || minsLeft === 15 || minsLeft === 0) {
         let beepCount = 0;
         const beepInterval = setInterval(() => {
           document.getElementById("beep").play().catch(e => console.log("Muted autoplay", e));
