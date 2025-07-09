@@ -243,7 +243,7 @@
 
       additions.forEach((add, index) => {
         let total = input + add;
-        if (total >= 60) total -= 60;
+        if (total > 60) total -= 60;
         const li = document.createElement("li");
         li.textContent = `${labels[index]}:${total}`;
         resultList.appendChild(li);
